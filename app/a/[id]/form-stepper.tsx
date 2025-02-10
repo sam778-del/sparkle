@@ -1,0 +1,376 @@
+"use client"
+
+import { useState } from "react"
+import { forms } from "../../forms"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Logo } from "@/components/ui/Logo"
+import { SuccessIcon } from "@/components/ui/Success"
+import { Textarea } from "@/components/ui/textarea"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { format } from "date-fns"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { ChevronDown, Upload } from "lucide-react"
+
+export function FormStepper({ formId }: { formId: string }) {
+  const [step, setStep] = useState(0)
+  const [phone, setPhone] = useState("")
+  const [countryCode, setCountryCode] = useState("+33")
+  const [code, setCode] = useState("")
+  const [answers, setAnswers] = useState<Record<string, boolean>>({})
+
+  const formData = forms[formId as keyof typeof forms]
+
+  const allCheckboxesChecked = formData.fields.some(field => answers[field.id])
+
+  const getAlertStyles = (style: string) => {
+    const styles = {
+      warning: {
+        background: "bg-[#FFF4F4]",
+        text: "text-[#73001F]",
+        border: "border-[#FFF4F4]",
+      },
+      error: {
+        background: "bg-[#FEF2F2]",
+        text: "text-[#991B1B]",
+        border: "border-red-200",
+      },
+      info: {
+        background: "bg-blue-50",
+        text: "text-blue-800",
+        border: "border-blue-200",
+      },
+      success: {
+        background: "bg-green-50",
+        text: "text-green-800",
+        border: "border-green-200",
+      },
+    }
+
+    return styles[style as keyof typeof styles] || styles.info
+  }
+
+  const alertStyles = getAlertStyles(formData.doctorMessage.style)
+
+  const steps = [
+    // Welcome Step
+    <div key="welcome" className="space-y-6 h-full flex flex-col">
+      <Logo />
+      <div className="flex-grow flex flex-col justify-end space-y-6">
+        <div className="space-y-2">
+          <h2 className="text-2xl font-bold text-[#000229]">Welcome to the quest</h2>
+          <p className="text-sm text-[#6B7488]">it is great to see you, we would like to let you know that all the data is confident la lka ka </p>
+        </div>
+
+        <div className="flex items-start space-x-2">
+          <Checkbox
+            id="consent"
+            checked={answers.consent}
+            onCheckedChange={(checked) => setAnswers((prev) => ({ ...prev, consent: checked as boolean }))}
+          />
+          <label htmlFor="consent" className="text-sm text-[#414651]">
+            I approve to provide this information to a doctor on your behalf...
+          </label>
+        </div>
+
+        <Button
+          className="w-full bg-emerald-500 hover:bg-emerald-600"
+          disabled={!answers.consent}
+          onClick={() => setStep(1)}
+        >
+          Get started
+        </Button>
+      </div>
+    </div>,
+
+    // Phone Step
+    <div key="phone" className="space-y-6">
+      <Logo />
+
+      <div className="space-y-2">
+        <h2 className="text-xl text-[#000229]">Please insert your phone number to receive code:</h2>
+      </div>
+
+      <div className="flex items-center border rounded-[14px] border-gray-300 overflow-hidden">
+        <Select
+          defaultValue={countryCode}
+          onValueChange={(value) => setCountryCode(value)}
+        >
+          <SelectTrigger className="w-[100px] border-none focus:ring-0">
+            <SelectValue placeholder="Code" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="+33">+33</SelectItem>
+            <SelectItem value="+44">+44</SelectItem>
+            <SelectItem value="+1">+1</SelectItem>
+          </SelectContent>
+        </Select>
+        <span className="text-gray-400 px-2">|</span>
+        <Input
+          type="number"
+          placeholder="054-*******25"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          className="border-none focus:ring-0 flex-grow"
+        />
+      </div>
+
+      <Button className="w-full bg-emerald-500 hover:bg-emerald-600"
+        onClick={() => setStep(2)}
+        disabled={phone.trim() === ''}
+      >
+        Receive code
+      </Button>
+    </div>,
+
+    // Verification Step
+    <div key="verification" className="space-y-6">
+      <Logo />
+
+      <div className="space-y-2">
+        <h2 className="text-xl text-[#000229]">Enter the 6-digit code we sent you at {`(${countryCode})`} {phone}</h2>
+      </div>
+
+      <div className="grid grid-cols-6 gap-2">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Input
+            key={i}
+            type="text"
+            maxLength={1}
+            className="w-full text-center text-xl border border-gray-300 rounded-[14px] h-12 focus:ring-2 focus:ring-emerald-500"
+            value={code[i] || ""}
+            onChange={(e) => {
+              const newCode = code.split("");
+              newCode[i] = e.target.value.replace(/\D/, "");
+              setCode(newCode.join(""));
+
+              if (e.target.value && i < 5) {
+                const nextInput = document.getElementById(`code-${i + 1}`);
+                if (nextInput instanceof HTMLInputElement) {
+                  nextInput.focus();
+                }
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Backspace" && !code[i] && i > 0) {
+                const prevInput = document.getElementById(`code-${i - 1}`);
+                if (prevInput instanceof HTMLInputElement) {
+                  prevInput.focus();
+                }
+              }
+            }}
+            id={`code-${i}`}
+            name={`code-${i}`}
+          />
+        ))}
+      </div>
+
+      <Button
+        className="w-full bg-emerald-500 hover:bg-emerald-600"
+        onClick={() => setStep(3)}
+        disabled={code.length !== 6}
+      >
+        View information
+      </Button>
+    </div>,
+
+    // Form Step
+    <div key="form" className="space-y-6 h-full flex flex-col">
+      <Logo />
+
+      {formId === "987654" && formData.revisions ? (
+        <div className="space-y-2">
+          <h2 className="text-2xl font-medium text-[#000229]">{formData.title}</h2>
+          {/* <p className="text-sm text-[#6B7488]">{formData.description}</p> */}
+          {formData.doctorMessage && (
+            <Alert className={`${alertStyles.background} border ${alertStyles.border} rounded-2xl p-6`}>
+              <AlertDescription className={`${alertStyles.text} text-sm leading-7`}>
+                {formData.doctorMessage.text}
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <h2 className="text-2xl font-medium text-[#000229]">Welcome to the quest</h2>
+          <p className="text-sm text-[#6B7488]">Lorem ipsum welcome to questionnaire Lorem ipsum welcome to questionnaire Lorem ipsum welcome to questionnaire Lorem ipsum welcome to questionnaire Lorem ipsum welcome to questionnaire </p>
+        </div>
+      )}
+
+      {formId === "987654" && formData.revisions ? (
+        <>
+          <div className="space-y-4">
+            {formData.fields.map((field) => (
+              <div key={field.id} className="space-y-2">
+                <>
+                  {field.conditional.map((conditionalField, idx) => {
+                    if (conditionalField.type === "textarea") {
+                      return (
+                        <div key={idx} className="space-y-4">
+                          <Textarea
+                            placeholder={conditionalField.placeholder}
+                            className="w-full min-h-[120px] text-base leading-6 text-[#0A0A29] placeholder:text-[#9CA3AF] rounded-2xl border border-[#E5E7EB] p-4 focus:ring-2 focus:ring-[#00BA88]"
+                          />
+                        </div>
+                      )
+                    } else if (conditionalField.type === "file") {
+                      return (
+                        <div key={idx} className="space-y-4">
+                          <p className="text-[#535862] text-sm text-base">{conditionalField.description}</p>
+                          <Button
+                            variant="outline"
+                            className="w-auto h-auto px-6 py-3 rounded-[14px] border border-[#E5E7EB] bg-white text-[#414651] hover:bg-gray-50 space-x-2"
+                          >
+                            <Upload className="w-5 h-5" />
+                            <span>Click here to upload</span>
+                          </Button>
+                        </div>
+                      )
+                    } else {
+                      return null
+                    }
+                  })}
+                </>
+              </div>
+            ))}
+          </div>
+          <Button
+            className="w-full bg-emerald-500 hover:bg-emerald-600"
+            onClick={() => setStep(4)}
+          >
+            {formData.submitButton.label}
+          </Button>
+        </>
+      ) : (
+        <div className="space-y-4">
+          {formData.fields.map((field) => (
+            <div key={field.id} className="space-y-2">
+              <div className="flex items-start space-x-2">
+                <Checkbox
+                  id={field.id}
+                  checked={answers[field.id]}
+                  onCheckedChange={(checked) =>
+                    setAnswers((prev) => ({ ...prev, [field.id]: checked as boolean }))
+                  }
+                />
+                <label htmlFor={field.id} className="text-sm font-medium text-[#161719]">
+                  {field.label}
+                </label>
+              </div>
+
+              {answers[field.id] && field.conditional && (
+                <>
+                  {field.conditional.map((conditionalField, idx) => {
+                    if (conditionalField.type === "textarea") {
+                      return (
+                        <div key={idx} className="space-y-4">
+                          <Textarea
+                            placeholder={conditionalField.placeholder}
+                            className="w-full min-h-[120px] text-base leading-6 text-[#0A0A29] placeholder:text-[#9CA3AF] rounded-2xl border border-[#E5E7EB] p-4 focus:ring-2 focus:ring-[#00BA88]"
+                          />
+                        </div>
+                      )
+                    } else if (conditionalField.type === "file") {
+                      return (
+                        <div key={idx} className="space-y-4">
+                          <p className="text-[#535862] text-sm text-base">{conditionalField.description}</p>
+                          <Button
+                            variant="outline"
+                            className="w-auto h-auto px-6 py-3 rounded-[14px] border border-[#E5E7EB] bg-white text-[#414651] hover:bg-gray-50 space-x-2"
+                          >
+                            <Upload className="w-5 h-5" />
+                            <span>Click here to upload</span>
+                          </Button>
+                        </div>
+                      )
+                    } else {
+                      return null
+                    }
+                  })}
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+
+      {formId === "987654" && formData.revisions && (
+        <div className="space-y-4">
+          <h3 className="text-[16px] leading-[24px] font-medium text-[#161719]">Revision history</h3>
+          {formData.revisions.map((revision) => (
+            <Collapsible key={revision.id}>
+              <CollapsibleTrigger className="w-full">
+                <div className="flex items-center justify-between w-full p-4 bg-[#F7F8F8] rounded-2xl hover:bg-[#F0F1F1] transition-colors">
+                  <span className="text-base font-medium text-[#000229]">
+                    {format(new Date(revision.timestamp), "do MMM, yyyy")}
+                  </span>
+                  <ChevronDown className="w-5 h-5 text-[#6B7488]" />
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-4 px-4 space-y-3">
+                {revision.changes.map((change, idx) => (
+                  <div key={idx} className="text-sm text-[#535862]">
+                    {change.newValue}
+                  </div>
+                ))}
+                {revision?.uploadedFiles && revision.uploadedFiles.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-[#000229]">Uploaded files:</p>
+                    {revision.uploadedFiles.map((file, idx) => (
+                      <a key={idx} href={file.url} className="block text-sm text-[#00BA88] hover:underline">
+                        {file.name}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </CollapsibleContent>
+            </Collapsible>
+          ))}
+        </div>
+      )}
+
+      {formId !== "987654" && (
+        <div className="flex-grow flex flex-col justify-end space-y-6">
+          {allCheckboxesChecked && (
+            <Button
+              className="w-full bg-emerald-500 hover:bg-emerald-600"
+              onClick={() => setStep(4)}
+            >
+              {formData.submitButton.label}
+            </Button>
+          )}
+        </div>
+      )}
+    </div>,
+
+    // Success Step
+    <div key="success" className="space-y-6 h-full flex flex-col">
+      <Logo />
+
+      <div className="flex-grow flex flex-col justify-center space-y-6 items-center">
+        <div className="relative w-20 h-20 flex items-center justify-center">
+          <SuccessIcon />
+        </div>
+
+        <div className="space-y-4 text-center">
+          <h2 className="text-2xl font-medium text-[#000229]">Thank you, Andrew Gomez</h2>
+          <p className="text-[#6B7488] text-base leading-relaxed text-sm">
+            Lorem ipsum welcome to questionnaire Lorem ipsum welcome to questionnaire Lorem ipsum welcome to questionnaire
+            Lorem ipsum welcome to questionnaire Lorem ipsum welcome to questionnaire
+          </p>
+        </div>
+      </div>
+    </div>,
+  ]
+
+  return (
+    <div className="w-full px-6 py-12 flex flex-col gap-16 h-full">
+      {/* Current Step */}
+      {steps[step]}
+    </div>
+  )
+}
+
