@@ -218,10 +218,25 @@ export function FormStepper({ formId }: { formId: string }) {
                     } else if (conditionalField.type === "file") {
                       return (
                         <div key={idx} className="space-y-4">
-                          <p className="text-[#535862] text-sm text-base">{conditionalField.description}</p>
+                          <p className="text-[#535862] text-sm">{conditionalField.description}</p>
+
+                          <input
+                            type="file"
+                            id={`file-upload-${idx}`}
+                            className="hidden"
+                            onChange={(event) => {
+                              const file = event.target.files?.[0]
+                              if (file) {
+                                console.log("Selected file:", file)
+
+                              }
+                            }}
+                          />
+
                           <Button
                             variant="outline"
                             className="w-auto h-auto px-6 py-3 rounded-[14px] border border-[#E5E7EB] bg-white text-[#414651] hover:bg-gray-50 space-x-2"
+                            onClick={() => document.getElementById(`file-upload-${idx}`)?.click()}
                           >
                             <Upload className="w-5 h-5" />
                             <span>Click here to upload</span>
@@ -275,10 +290,25 @@ export function FormStepper({ formId }: { formId: string }) {
                     } else if (conditionalField.type === "file") {
                       return (
                         <div key={idx} className="space-y-4">
-                          <p className="text-[#535862] text-sm text-base">{conditionalField.description}</p>
+                          <p className="text-[#535862] text-sm">{conditionalField.description}</p>
+
+                          <input
+                            type="file"
+                            id={`file-upload-${idx}`}
+                            className="hidden"
+                            onChange={(event) => {
+                              const file = event.target.files?.[0]
+                              if (file) {
+                                console.log("Selected file:", file)
+
+                              }
+                            }}
+                          />
+
                           <Button
                             variant="outline"
                             className="w-auto h-auto px-6 py-3 rounded-[14px] border border-[#E5E7EB] bg-white text-[#414651] hover:bg-gray-50 space-x-2"
+                            onClick={() => document.getElementById(`file-upload-${idx}`)?.click()}
                           >
                             <Upload className="w-5 h-5" />
                             <span>Click here to upload</span>
@@ -347,16 +377,16 @@ export function FormStepper({ formId }: { formId: string }) {
     </div>,
 
     // Success Step
-    <div key="success" className="space-y-6 h-full flex flex-col">
+    <div className="space-y-16 h-full">
       <Logo />
 
-      <div className="flex-grow flex flex-col justify-center space-y-6 items-center">
-        <div className="relative w-20 h-20 flex items-center justify-center">
+      <div className="space-y-8 text-center">
+        <div className="relative w-20 h-20 mx-auto">
           <SuccessIcon />
         </div>
 
         <div className="space-y-4 text-center">
-          <h2 className="text-2xl font-medium text-[#000229]">Thank you, Andrew Gomez</h2>
+          <h2 className="text-xl font-medium text-[#000229]">Thank you, Andrew Gomez</h2>
           <p className="text-[#6B7488] text-base leading-relaxed text-sm">
             Lorem ipsum welcome to questionnaire Lorem ipsum welcome to questionnaire Lorem ipsum welcome to questionnaire
             Lorem ipsum welcome to questionnaire Lorem ipsum welcome to questionnaire
