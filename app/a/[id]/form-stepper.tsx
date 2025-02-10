@@ -60,7 +60,7 @@ export function FormStepper({ formId }: { formId: string }) {
       <Logo />
       <div className="flex-grow flex flex-col justify-end space-y-6">
         <div className="space-y-2">
-          <h2 className="text-2xl font-bold text-[#000229]">Welcome to the quest</h2>
+          <h1 className="text-3xl font-bold leading-[40px] text-[#000229]">Welcome to the quest</h1>
           <p className="text-sm text-[#6B7488]">it is great to see you, we would like to let you know that all the data is confident la lka ka </p>
         </div>
 
@@ -70,7 +70,7 @@ export function FormStepper({ formId }: { formId: string }) {
             checked={answers.consent}
             onCheckedChange={(checked) => setAnswers((prev) => ({ ...prev, consent: checked as boolean }))}
           />
-          <label htmlFor="consent" className="text-sm text-[#414651]">
+          <label htmlFor="consent" className="text-sm leading-[20px] font-medium text-[#414651]">
             I approve to provide this information to a doctor on your behalf...
           </label>
         </div>
@@ -326,36 +326,40 @@ export function FormStepper({ formId }: { formId: string }) {
         </div>
       )}
 
-
       {formId === "987654" && formData.revisions && (
         <div className="space-y-4">
           <h3 className="text-[16px] leading-[24px] font-medium text-[#161719]">Revision history</h3>
           {formData.revisions.map((revision) => (
             <Collapsible key={revision.id}>
               <CollapsibleTrigger className="w-full">
-                <div className="flex items-center justify-between w-full p-4 bg-[#F7F8F8] rounded-2xl hover:bg-[#F0F1F1] transition-colors">
+                <div className="flex items-center justify-between w-full p-4 bg-[#F7F8F8] rounded-t-2xl data-[state=closed]:rounded-2xl hover:bg-[#F0F1F1] transition-colors">
                   <span className="text-base font-medium text-[#000229]">
                     {format(new Date(revision.timestamp), "do MMM, yyyy")}
                   </span>
-                  <ChevronDown className="w-5 h-5 text-[#6B7488]" />
+                  <ChevronDown className="w-5 h-5 text-[#6B7488] transition-transform duration-200 data-[state=open]:rotate-180" />
                 </div>
               </CollapsibleTrigger>
-              <CollapsibleContent className="pt-4 px-4 space-y-3">
-                {revision.changes.map((change, idx) => (
-                  <div key={idx} className="text-sm text-[#535862]">
-                    {change.newValue}
-                  </div>
-                ))}
-                {revision?.uploadedFiles && revision.uploadedFiles.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-[#000229]">Uploaded files:</p>
-                    {revision.uploadedFiles.map((file, idx) => (
-                      <a key={idx} href={file.url} className="block text-sm text-[#00BA88] hover:underline">
-                        {file.name}
-                      </a>
-                    ))}
-                  </div>
-                )}
+              <CollapsibleContent>
+                <div className="bg-[#F7F8F8] px-4 pb-4 rounded-b-2xl space-y-3">
+                  {revision.changes.map((change, idx) => (
+                    <div key={idx} className="text-[14px] leading-[20px] text-[#535862]">
+                      {change.newValue}
+                    </div>
+                  ))}
+                  {revision?.uploadedFiles && revision.uploadedFiles.length > 0 && (
+                    <div className="space-y-1">
+                      {revision.uploadedFiles.map((file, idx) => (
+                        <div key={idx} className="flex items-center space-x-1">
+                          <span className="text-[14px] leading-[20px] text-[#535862]">(file uploaded:</span>
+                          <a href={file.url} className="text-[14px] leading-[20px] text-[#00BA88] hover:underline">
+                            {file.name}
+                          </a>
+                          <span className="text-[14px] leading-[20px] text-[#535862]">)</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </CollapsibleContent>
             </Collapsible>
           ))}
@@ -387,7 +391,7 @@ export function FormStepper({ formId }: { formId: string }) {
 
         <div className="space-y-4 text-center">
           <h2 className="text-xl font-medium text-[#000229]">Thank you, Andrew Gomez</h2>
-          <p className="text-[#6B7488] text-base leading-relaxed text-sm">
+          <p className="text-[#6B7488] text-sm">
             Lorem ipsum welcome to questionnaire Lorem ipsum welcome to questionnaire Lorem ipsum welcome to questionnaire
             Lorem ipsum welcome to questionnaire Lorem ipsum welcome to questionnaire
           </p>

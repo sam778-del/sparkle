@@ -10,7 +10,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-inter)"],
+        sans: ["var(--font-inter)", "var(--font-raleway)", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
