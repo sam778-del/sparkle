@@ -20,6 +20,7 @@ export function FormStepper({ formId }: { formId: string }) {
   const [countryCode, setCountryCode] = useState("+33")
   const [code, setCode] = useState("")
   const [answers, setAnswers] = useState<Record<string, boolean>>({})
+  const [uploadedFiles, setUploadedFiles] = useState<Record<string, File>>({})
 
   const formData = forms[formId as keyof typeof forms]
 
@@ -202,52 +203,78 @@ export function FormStepper({ formId }: { formId: string }) {
       {formId === "987654" && formData.revisions ? (
         <>
           <div className="space-y-4">
-            {formData.fields.map((field) => (
+            {formData.fields.map((field: any) => (
               <div key={field.id} className="space-y-2">
-                <>
-                  {field.conditional.map((conditionalField, idx) => {
-                    if (conditionalField.type === "textarea") {
-                      return (
-                        <div key={idx} className="space-y-4">
-                          <Textarea
-                            placeholder={conditionalField.placeholder}
-                            className="w-full min-h-[120px] text-base leading-6 text-[#0A0A29] placeholder:text-[#9CA3AF] rounded-2xl border border-[#E5E7EB] p-4 focus:ring-2 focus:ring-[#00BA88]"
-                          />
-                        </div>
-                      )
-                    } else if (conditionalField.type === "file") {
-                      return (
-                        <div key={idx} className="space-y-4">
-                          <p className="text-[#535862] text-sm">{conditionalField.description}</p>
+                {field.conditional.map((conditionalField: any, idx: number) => {
+                  if (conditionalField.type === "textarea") {
+                    return (
+                      <div key={idx} className="space-y-4">
+                        <Textarea
+                          placeholder={conditionalField.placeholder}
+                          className="w-full min-h-[120px] text-base leading-6 text-[#0A0A29] placeholder:text-[#9CA3AF] rounded-2xl border border-[#E5E7EB] p-4 focus:ring-2 focus:ring-[#00BA88]"
+                        />
+                      </div>
+                    )
+                  } else if (conditionalField.type === "file") {
+                    // Create a unique key using the field id and the index.
+                    const fileKey = `${field.id}-file-upload-${idx}`
 
-                          <input
-                            type="file"
-                            id={`file-upload-${idx}`}
-                            className="hidden"
-                            onChange={(event) => {
-                              const file = event.target.files?.[0]
-                              if (file) {
-                                console.log("Selected file:", file)
+                    return (
+                      <div key={idx} className="space-y-4">
+                        <p className="text-[#535862] text-sm">
+                          {conditionalField.description}
+                        </p>
 
+                        <input
+                          type="file"
+                          id={fileKey}
+                          className="hidden"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0]
+                            if (file) {
+                              setUploadedFiles((prev) => ({
+                                ...prev,
+                                [fileKey]: file,
+                              }))
+                              console.log("Selected file:", file)
+                            }
+                          }}
+                        />
+
+                        <Button
+                          variant="outline"
+                          className="w-auto h-auto px-6 py-3 rounded-[14px] border border-[#E5E7EB] bg-white text-[#414651] hover:bg-gray-50 space-x-2"
+                          onClick={() => document.getElementById(fileKey)?.click()}
+                        >
+                          <Upload className="w-5 h-5" />
+                          <span>Click here to upload</span>
+                        </Button>
+
+                        {uploadedFiles[fileKey] && (
+                          <div className="mt-2 flex items-center justify-between">
+                            <span className="text-sm text-[#414651]">
+                              {uploadedFiles[fileKey].name}
+                            </span>
+                            <button
+                              onClick={() =>
+                                setUploadedFiles((prev) => {
+                                  const newFiles = { ...prev }
+                                  delete newFiles[fileKey]
+                                  return newFiles
+                                })
                               }
-                            }}
-                          />
-
-                          <Button
-                            variant="outline"
-                            className="w-auto h-auto px-6 py-3 rounded-[14px] border border-[#E5E7EB] bg-white text-[#414651] hover:bg-gray-50 space-x-2"
-                            onClick={() => document.getElementById(`file-upload-${idx}`)?.click()}
-                          >
-                            <Upload className="w-5 h-5" />
-                            <span>Click here to upload</span>
-                          </Button>
-                        </div>
-                      )
-                    } else {
-                      return null
-                    }
-                  })}
-                </>
+                              className="text-red-500 hover:underline ml-2"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  } else {
+                    return null
+                  }
+                })}
               </div>
             ))}
           </div>
@@ -260,14 +287,14 @@ export function FormStepper({ formId }: { formId: string }) {
         </>
       ) : (
         <div className="space-y-4">
-          {formData.fields.map((field) => (
+          {formData.fields.map((field: any) => (
             <div key={field.id} className="space-y-2">
               <div className="flex items-start space-x-2">
                 <Checkbox
                   id={field.id}
                   checked={answers[field.id]}
                   onCheckedChange={(checked) =>
-                    setAnswers((prev) => ({ ...prev, [field.id]: checked as boolean }))
+                    setAnswers((prev: any) => ({ ...prev, [field.id]: checked }))
                   }
                 />
                 <label htmlFor={field.id} className="text-sm font-medium text-[#161719]">
@@ -277,7 +304,7 @@ export function FormStepper({ formId }: { formId: string }) {
 
               {answers[field.id] && field.conditional && (
                 <>
-                  {field.conditional.map((conditionalField, idx) => {
+                  {field.conditional.map((conditionalField: any, idx: number) => {
                     if (conditionalField.type === "textarea") {
                       return (
                         <div key={idx} className="space-y-4">
@@ -288,19 +315,27 @@ export function FormStepper({ formId }: { formId: string }) {
                         </div>
                       )
                     } else if (conditionalField.type === "file") {
+                      // Create a unique key for each file upload field
+                      const fileKey = `${field.id}-file-upload-${idx}`
+
                       return (
                         <div key={idx} className="space-y-4">
-                          <p className="text-[#535862] text-sm">{conditionalField.description}</p>
+                          <p className="text-[#535862] text-sm">
+                            {conditionalField.description}
+                          </p>
 
                           <input
                             type="file"
-                            id={`file-upload-${idx}`}
+                            id={fileKey}
                             className="hidden"
                             onChange={(event) => {
                               const file = event.target.files?.[0]
                               if (file) {
+                                setUploadedFiles((prev) => ({
+                                  ...prev,
+                                  [fileKey]: file,
+                                }))
                                 console.log("Selected file:", file)
-
                               }
                             }}
                           />
@@ -308,11 +343,31 @@ export function FormStepper({ formId }: { formId: string }) {
                           <Button
                             variant="outline"
                             className="w-auto h-auto px-6 py-3 rounded-[14px] border border-[#E5E7EB] bg-white text-[#414651] hover:bg-gray-50 space-x-2"
-                            onClick={() => document.getElementById(`file-upload-${idx}`)?.click()}
+                            onClick={() => document.getElementById(fileKey)?.click()}
                           >
                             <Upload className="w-5 h-5" />
                             <span>Click here to upload</span>
                           </Button>
+
+                          {uploadedFiles[fileKey] && (
+                            <div className="mt-2 flex items-center justify-between">
+                              <span className="text-sm text-[#414651]">
+                                {uploadedFiles[fileKey].name}
+                              </span>
+                              <button
+                                onClick={() =>
+                                  setUploadedFiles((prev) => {
+                                    const newFiles = { ...prev }
+                                    delete newFiles[fileKey]
+                                    return newFiles
+                                  })
+                                }
+                                className="text-red-500 hover:underline ml-2"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          )}
                         </div>
                       )
                     } else {
